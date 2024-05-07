@@ -1,0 +1,31 @@
+syntax= "proto3";
+
+option csharp_namespace= "MeterReading.gRPC";
+
+service MeterReadingService {
+	rpc AddReading (ReadingPacket)returns (StatusMessage);
+}
+message ReadingPacket {
+	repeated ReadingMessage Readings = 1;
+	ReadingStatus Successful = 2;
+}
+
+message ReadingMessage {
+	int32 CustomerId = 1;
+	int32 ReadingValue = 2;
+	string Notes = 3;
+	string ReadingTime = 5;
+	reserved 4;
+	reserved "Successful";
+}
+
+message StatusMessage {
+	ReadingStatus Success = 1;
+	string Message = 2;
+}
+
+enum ReadingStatus {
+	Unkown = 0;
+	Success = 1;
+	Failure = 2;
+}

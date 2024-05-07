@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Grpc.AspNetCore" Version="2.49.0" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.3" />
@@ -21,6 +22,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MeterReaderLib\MeterReaderLib.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="..\meterservice.proto" GrpcServices="Server">
+      <Link>Protos\meterservice.proto</Link>
+    </Protobuf>
   </ItemGroup>
 
 </Project>

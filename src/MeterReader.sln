@@ -9,7 +9,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{3354F1
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Clients", "Clients", "{556BF8F4-270F-4B9C-BCE9-A8F78D4889BE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeterReader", "MeterReader\MeterReader.csproj", "{D7F44834-1CD6-46D3-AE27-139D34CD2296}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MeterReader", "MeterReader\MeterReader.csproj", "{D7F44834-1CD6-46D3-AE27-139D34CD2296}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7D19A24D-D886-4954-974E-DF3EFFFB1527}"
+	ProjectSection(SolutionItems) = preProject
+		meterservice.proto = meterservice.proto
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

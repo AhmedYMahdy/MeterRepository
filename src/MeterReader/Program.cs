@@ -1,3 +1,4 @@
+using MeterReader.Services;
 using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,93 +14,96 @@ app.Run();
 
 static void SetupApi(WebApplication app)
 {
-  // Token Generation
-  app.MapPost("/api/token", async Task<IResult> (CredentialModel model, JwtTokenValidationService tokenService) =>
-  {
-    var result = await tokenService.GenerateTokenModelAsync(model);
-
-    if (result.Success)
+    // Token Generation
+    app.MapPost("/api/token", async Task<IResult> (CredentialModel model, JwtTokenValidationService tokenService) =>
     {
-      return Results.Created("", new { token = result.Token, expiration = result.Expiration });
-    }
+        var result = await tokenService.GenerateTokenModelAsync(model);
 
-    return Results.BadRequest();
-  }).AllowAnonymous();
+        if (result.Success)
+        {
+            return Results.Created("", new { token = result.Token, expiration = result.Expiration });
+        }
 
-  // REST API
-  app.MapGet("/api/customers", async Task<IResult> (IReadingRepository repo) =>
-  {
-    var result = await repo.GetCustomersWithReadingsAsync();
+        return Results.BadRequest();
+    }).AllowAnonymous();
 
-    return Results.Ok(result);
-  });
+    // REST API
+    app.MapGet("/api/customers", async Task<IResult> (IReadingRepository repo) =>
+    {
+        var result = await repo.GetCustomersWithReadingsAsync();
 
-  app.MapGet("/api/customers/{id:int}", async Task<IResult> (int id, IReadingRepository repo) =>
-  {
-    var result = await repo.GetCustomerWithReadingsAsync(id);
+        return Results.Ok(result);
+    });
 
-    return Results.Ok(result);
-  });
+    app.MapGet("/api/customers/{id:int}", async Task<IResult> (int id, IReadingRepository repo) =>
+    {
+        var result = await repo.GetCustomerWithReadingsAsync(id);
+
+        return Results.Ok(result);
+    });
 }
 
 static void SetupMiddleware(WebApplication webApp)
 {
-  // Configure the HTTP request pipeline.
-  if (webApp.Environment.IsDevelopment())
-  {
-    webApp.UseMigrationsEndPoint();
-  }
-  else
-  {
-    webApp.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    webApp.UseHsts();
-    webApp.UseHttpsRedirection();
-  }
+    // Configure the HTTP request pipeline.
+    if (webApp.Environment.IsDevelopment())
+    {
+        webApp.UseMigrationsEndPoint();
+    }
+    else
+    {
+        webApp.UseExceptionHandler("/Error");
+        // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+        webApp.UseHsts();
+        webApp.UseHttpsRedirection();
+    }
 
-  webApp.UseStaticFiles();
+    webApp.UseStaticFiles();
 
-  webApp.UseRouting();
+    webApp.UseRouting();
 
-  webApp.UseCors();
+    webApp.UseCors();
 
-  webApp.UseAuthentication();
-  webApp.UseAuthorization();
+    webApp.UseAuthentication();
+    webApp.UseAuthorization();
 
-  webApp.MapRazorPages();
+    webApp.MapRazorPages();
+    webApp.MapGrpcService<MeterReadingService>();
 
 }
 
 
 static void RegisterServices(WebApplicationBuilder bldr)
 {
-  bldr.Services.AddScoped<JwtTokenValidationService>();
-  bldr.Services.AddAuthentication()
-    .AddJwtBearer(cfg =>
+    bldr.Services.AddScoped<JwtTokenValidationService>();
+    bldr.Services.AddAuthentication()
+      .AddJwtBearer(cfg =>
+      {
+          cfg.TokenValidationParameters = new MeterReaderTokenValidationParameters(bldr.Configuration);
+      });
+
+    bldr.Services.AddCors(cfg =>
     {
-      cfg.TokenValidationParameters = new MeterReaderTokenValidationParameters(bldr.Configuration);
+        cfg.AddPolicy("AllowAll", opt =>
+      {
+          opt.AllowAnyOrigin();
+          opt.AllowAnyMethod();
+          opt.AllowAnyHeader();
+      });
     });
 
-  bldr.Services.AddCors(cfg =>
-  {
-    cfg.AddPolicy("AllowAll", opt =>
-    {
-      opt.AllowAnyOrigin();
-      opt.AllowAnyMethod();
-      opt.AllowAnyHeader();
-    });
-  });
-  
-  var connectionString = bldr.Configuration.GetConnectionString("DefaultConnection");
-  bldr.Services.AddDbContext<ReadingContext>(options =>
-      options.UseSqlServer(connectionString));
-  bldr.Services.AddDatabaseDeveloperPageExceptionFilter();
+    var connectionString = bldr.Configuration.GetConnectionString("DefaultConnection");
+    bldr.Services.AddDbContext<ReadingContext>(options =>
+        options.UseSqlServer(connectionString));
+    bldr.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-  bldr.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
-      .AddEntityFrameworkStores<ReadingContext>();
+    bldr.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
+        .AddEntityFrameworkStores<ReadingContext>();
 
-  bldr.Services.AddScoped<IReadingRepository, ReadingRepository>();
+    bldr.Services.AddScoped<IReadingRepository, ReadingRepository>();
 
-  bldr.Services.AddRazorPages();
+    bldr.Services.AddRazorPages();
+
+    bldr.Services.AddGrpc(cfg => cfg.EnableDetailedErrors = true);
 
 }

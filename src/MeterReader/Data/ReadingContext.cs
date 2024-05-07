@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using MeterReadingEntity = MeterReader.Data.Entities.MeterReading;
 
 namespace MeterReader.Data;
 
@@ -10,7 +11,7 @@ public class ReadingContext : IdentityDbContext<IdentityUser>
 
   public DbSet<Customer> Customers => Set<Customer>();
   public DbSet<Address> Addresses => Set<Address>();
-  public DbSet<MeterReading> Readings => Set<MeterReading>();
+  public DbSet<MeterReadingEntity> Readings => Set<MeterReadingEntity>();
 
   protected override void OnModelCreating(ModelBuilder builder)
   {
@@ -49,7 +50,7 @@ public class ReadingContext : IdentityDbContext<IdentityUser>
         PostalCode = "30304"
       });
 
-    builder.Entity<MeterReading>()
+    builder.Entity<MeterReadingEntity>()
       .HasData(new
        {
          Id = 1,
