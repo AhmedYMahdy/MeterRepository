@@ -67,8 +67,8 @@ static void SetupMiddleware(WebApplication webApp)
     webApp.UseAuthentication();
     webApp.UseAuthorization();
 
-    webApp.MapRazorPages();
     webApp.MapGrpcService<MeterReadingService>();
+    webApp.MapRazorPages();
 
 }
 

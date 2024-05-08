@@ -5,6 +5,7 @@ option csharp_namespace= "MeterReading.gRPC";
 service MeterReadingService {
 	rpc AddReading (ReadingPacket)returns (StatusMessage);
 	rpc AddReadingStream (stream ReadingMessage)returns (stream ErrorMessage);
+	rpc GenerateToken (TokenRequest)returns (TokenResponse);
 }
 message ReadingPacket {
 	repeated ReadingMessage Readings = 1;
@@ -33,4 +34,13 @@ enum ReadingStatus {
 	Unkown = 0;
 	Success = 1;
 	Failure = 2;
+}
+message TokenRequest {
+	string Username=1;
+	string Password=2;
+}
+
+message TokenResponse {
+	bool Success=1;
+	string Token=2;
 }

@@ -1,21 +1,26 @@
 ﻿using Grpc.Core;
 using MeterReading.gRPC;
-using MeterReadingEntity = MeterReader.Data.Entities.MeterReading;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using static MeterReading.gRPC.MeterReadingService;
-using Google.Protobuf.WellKnownTypes;
+using MeterReadingEntity = MeterReader.Data.Entities.MeterReading;
 
 namespace MeterReader.Services;
 
+[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 public class MeterReadingService : MeterReadingServiceBase
 {
     private readonly IReadingRepository _readingRepository;
+    private readonly JwtTokenValidationService _jwtService;
     private readonly ILogger<MeterReadingService> _logger;
 
     public MeterReadingService(
         IReadingRepository readingRepository,
+        JwtTokenValidationService jwtTokenValidationService,
         ILogger<MeterReadingService> logger)
     {
         _readingRepository = readingRepository;
+        _jwtService = jwtTokenValidationService;
         _logger = logger;
     }
 
@@ -76,5 +81,28 @@ public class MeterReadingService : MeterReadingServiceBase
             _readingRepository.AddEntity(readingVal);
             await _readingRepository.SaveAllAsync();
         }
+    }
+
+    [AllowAnonymous]
+    public override async Task<TokenResponse> GenerateToken(TokenRequest request, ServerCallContext context)
+    {
+        var creds = new CredentialModel
+        {
+            UserName = request.Username,
+            Passcode = request.Password,
+        };
+        var result = await _jwtService.GenerateTokenModelAsync(creds);
+
+        if (result.Success)
+            return new TokenResponse
+            {
+                Success = true,
+                Token = result.Token
+            };
+
+        return new TokenResponse
+        {
+            Success = false,
+        };
     }
 }
